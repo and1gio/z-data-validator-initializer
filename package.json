@@ -16,7 +16,7 @@
         }
     ],
     "dependencies": {
-        "validate.js": "0.10.0"
+        "validate.js": "0.11.1"
     },
     "main": "z-validator-initializer.js"
 }
