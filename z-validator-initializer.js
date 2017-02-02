@@ -25,21 +25,23 @@ module.exports = {
                         app.logger.info("VALIDATE INCOMING PARAMS ", req.params);
                     }
 
+                    var errors = [];
+
                     var bodyErrors = validate(req.body, rule.body, {format: "grouped"});
+                    buildErrors (errors, bodyErrors, "requestBody");
+
+
                     var queryErrors = validate(req.query, rule.query, {format: "grouped"});
+                    buildErrors (errors, queryErrors, "query");
+
                     var paramsErrors = validate(req.params, rule.params, {format: "grouped"});
+                    buildErrors (errors, paramsErrors, "params");
 
-                    var errors = app._.concat(bodyErrors, queryErrors, paramsErrors);
-
-                    if (app.config.zValidator.useZFormat) {
-                        errors = clearErrors (errors);
-                    }
-
-                    if (app.config.zValidator.log && errors) {
+                    if (app.config.zValidator.log && errors && errors.length > 0) {
                         app.logger.info("VALIDATION FAILED", errors);
                     }
 
-                    if(errors){
+                    if(errors && errors.length > 0){
                         throw {errors: errors};
                     }
 
@@ -48,17 +50,15 @@ module.exports = {
             }
         };
 
-        function clearErrors (errorArray) {
-            if (errorArray && errorArray.length > 0) {
-                var errors = [];
-                for (var i in errorArray) {
-                    if(errorArray[i]){
-                        errors.push(errorArray[i]);
-                    }
+        function buildErrors (result, validatedResult, type) {
+            if(validatedResult){
+                for (var key in validatedResult) {
+                    result.push({
+                        from: type,
+                        param: key,
+                        keyword: validatedResult[key][0]
+                    });
                 }
-                return errors;
-            } else {
-                return null;
             }
         }
 
